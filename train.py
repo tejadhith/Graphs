@@ -3,11 +3,20 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch_geometric
-from karateclub import DeepWalk, Node2Vec
+
+# from karateclub import DeepWalk, Node2Vec
 
 
 def gnnTrainLoop(
-    model, dataloader, optimizer, scheduler, epochs, patience, device, verbose=False
+    model,
+    dataloader,
+    optimizer,
+    scheduler,
+    epochs,
+    patience,
+    device,
+    batch_size=32,
+    verbose=False,
 ):
     """
     Train loop for GNN
@@ -28,6 +37,8 @@ def gnnTrainLoop(
         Number of epochs to wait before early stopping
     device : str
         Device to train on (cpu, cuda, mps)
+    batch_size : int
+        Batch size for training
     verbose : bool
         Whether to print training progress
 
@@ -56,25 +67,39 @@ def gnnTrainLoop(
     val_losses = []
     val_accuracies = []
 
+    train_indices = torch.arange(0, len(dataloader.dataset.x))[
+        dataloader.dataset.train_mask
+    ]
+    train_indices = train_indices.to(device)
+
     for epoch in range(epochs):
         train_loss = 0.0
         train_accuracy = 0.0
         total_training_samples = 0.0
 
-        for batch in dataloader:
-            batch = batch.to(device)
-            optimizer.zero_grad()
-            out = model(batch.x, batch.edge_index)
-            loss = F.cross_entropy(out[batch.train_mask], batch.y[batch.train_mask])
-            loss.backward()
-            optimizer.step()
+        train_indices = train_indices[torch.randperm(len(train_indices))]
 
-            train_loss += loss.item()
+        for batch in torch.split(train_indices, batch_size):
+            for data in dataloader:
+                data = data.to(device)
+                optimizer.zero_grad()
+                out = model(data.x, data.edge_index)
 
-            _, pred = torch.max(out[batch.train_mask], 1)
-            correct = (pred == batch.y[batch.train_mask]).sum().item()
-            train_accuracy += correct
-            total_training_samples += batch.train_mask.sum().item()
+                out = out[batch]
+                targets = data.y[batch]
+
+                loss = F.cross_entropy(out, targets)
+                loss.backward()
+
+                torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
+
+                optimizer.step()
+                train_loss += loss.item()
+
+                _, pred = torch.max(out, 1)
+                correct = (pred == targets).sum().item()
+                train_accuracy += correct
+                total_training_samples += batch_size
 
         val_loss, val_accuracy = gnnValidationLoop(
             model=model,
@@ -99,6 +124,7 @@ def gnnTrainLoop(
             best_val = val_loss
             patience_counter = 0
             best_model = model
+
         else:
             patience_counter += 1
             if patience_counter >= patience:
@@ -253,7 +279,7 @@ def mlpTrainLoop(
     model = model.to(device)
     patience_counter = 0
     best_val = np.inf
-    bset_model = None
+    best_model = None
 
     train_loader, val_loader = dataloaders
 
@@ -274,6 +300,7 @@ def mlpTrainLoop(
             out = model(data)
             loss = F.cross_entropy(out, target)
             loss.backward()
+
             optimizer.step()
 
             train_loss += loss.item()

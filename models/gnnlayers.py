@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import torch_geometric
 from models.gnnfunctions import GNNEssentials
 
 
@@ -51,9 +52,9 @@ class GCNLayer(nn.Module):
         sparse_adj_matrix = self.gnn_essential.getSparseAdjacency(edge_index, (n, n))
         degree_matrix = self.gnn_essential.getInvesreDegreeMatrix(edge_index)
 
-        featureW = torch.spmm(sparse_adj_matrix, features)
+        featureW = self.layerW(features)
+        featureW = torch.spmm(sparse_adj_matrix, featureW)
         featureW = torch.spmm(degree_matrix, featureW)
-        featureW = self.layerW(featureW)
 
         featureB = self.layerB(features)
         return featureW + featureB

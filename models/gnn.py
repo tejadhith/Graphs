@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import torch_geometric
 from models.mlp import MLP
 from models.gnnlayers import GCNLayer, GraphSageLayer, GraphAttentionNetwork
 
@@ -37,16 +38,10 @@ class GCNModel(nn.Module):
         self.gcnconv1 = GCNLayer(input_dim, hidden_dims[0], self.device)
         self.gcnconv2 = GCNLayer(hidden_dims[0], hidden_dims[1], self.device)
 
-        if batch_norm:
-            self.dropout_batch_norm1 = nn.Sequential(
-                nn.BatchNorm1d(hidden_dims[0]), nn.Dropout(p=dropout)
-            )
-            self.dropout_batch_norm2 = nn.Sequential(
-                nn.BatchNorm1d(hidden_dims[1]), nn.Dropout(p=dropout)
-            )
-        else:
-            self.dropout_batch_norm1 = nn.Dropout(p=dropout)
-            self.dropout_batch_norm2 = nn.Dropout(p=dropout)
+        self.batch_norm = batch_norm
+        if self.batch_norm:
+            self.batch_norm_layer1 = nn.BatchNorm1d(hidden_dims[0])
+            self.batch_norm_layer2 = nn.BatchNorm1d(hidden_dims[1])
 
         self.mlp = MLP(
             hidden_dims[1],
@@ -74,9 +69,15 @@ class GCNModel(nn.Module):
         """
 
         features = self.gcnconv1(features, edge_index)
-        features = F.sigmoid(self.dropout_batch_norm1(features))
+        if self.batch_norm:
+            features = self.batch_norm_layer1(features)
+
+        features = F.sigmoid(features)
         features = self.gcnconv2(features, edge_index)
-        features = F.sigmoid(self.dropout_batch_norm2(features))
+        if self.batch_norm:
+            features = self.batch_norm_layer2(features)
+
+        features = F.sigmoid(features)
         return self.mlp(features)
 
 
@@ -121,16 +122,10 @@ class GraphSageModel(nn.Module):
             hidden_dims[0], hidden_dims[1], agg_layer, self.device
         )
 
-        if batch_norm:
-            self.dropout_batch_norm1 = nn.Sequential(
-                nn.BatchNorm1d(hidden_dims[0]), nn.Dropout(p=dropout)
-            )
-            self.dropout_batch_norm2 = nn.Sequential(
-                nn.BatchNorm1d(hidden_dims[1]), nn.Dropout(p=dropout)
-            )
-        else:
-            self.dropout_batch_norm1 = nn.Dropout(p=dropout)
-            self.dropout_batch_norm2 = nn.Dropout(p=dropout)
+        self.batch_norm = batch_norm
+        if self.batch_norm:
+            self.batch_norm_layer1 = nn.BatchNorm1d(hidden_dims[0])
+            self.batch_norm_layer2 = nn.BatchNorm1d(hidden_dims[1])
 
         self.mlp = MLP(
             hidden_dims[1],
@@ -158,9 +153,15 @@ class GraphSageModel(nn.Module):
         """
 
         features = self.sage1(features, edge_index)
-        features = F.sigmoid(self.dropout_batch_norm1(features))
+        if self.batch_norm:
+            features = self.batch_norm_layer1(features)
+
+        features = F.sigmoid(features)
         features = self.sage2(features, edge_index)
-        features = F.sigmoid(self.dropout_batch_norm2(features))
+        if self.batch_norm:
+            features = self.batch_norm_layer2(features)
+
+        features = F.sigmoid(features)
         return self.mlp(features)
 
 
@@ -210,16 +211,10 @@ class GATModel(nn.Module):
             hidden_dims[0], attention_dim, num_heads, hidden_dims[1], self.device
         )
 
-        if batch_norm:
-            self.dropout_batch_norm1 = nn.Sequential(
-                nn.BatchNorm1d(hidden_dims[0]), nn.Dropout(p=dropout)
-            )
-            self.dropout_batch_norm2 = nn.Sequential(
-                nn.BatchNorm1d(hidden_dims[1]), nn.Dropout(p=dropout)
-            )
-        else:
-            self.dropout_batch_norm1 = nn.Dropout(p=dropout)
-            self.dropout_batch_norm2 = nn.Dropout(p=dropout)
+        self.batch_norm = batch_norm
+        if self.batch_norm:
+            self.batch_norm_layer1 = nn.BatchNorm1d(hidden_dims[0])
+            self.batch_norm_layer2 = nn.BatchNorm1d(hidden_dims[1])
 
         self.mlp = MLP(
             hidden_dims[1],
@@ -246,8 +241,15 @@ class GATModel(nn.Module):
             Output tensor
         """
 
-        features = self.gat1(features, edge_index)
-        features = F.sigmoid(self.dropout_batch_norm1(features))
-        features = self.gat2(features, edge_index)
-        features = F.sigmoid(self.dropout_batch_norm2(features))
+        edge_indexs = torch_geometric.utils.add_self_loops(edge_index)[0]
+        features = self.gat1(features, edge_indexs)
+        if self.batch_norm:
+            features = self.batch_norm_layer1(features)
+
+        features = F.sigmoid(features)
+        features = self.gat2(features, edge_indexs)
+        if self.batch_norm:
+            features = self.batch_norm_layer2(features)
+
+        features = F.sigmoid(features)
         return self.mlp(features)

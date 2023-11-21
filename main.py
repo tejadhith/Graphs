@@ -10,7 +10,9 @@ from models.gnn import GCNModel, GraphSageModel, GATModel
 from models.mlp import MLP
 from utils import outputWriter, getLoaders
 from train import *
-from karateclub import DeepWalk, Node2Vec
+
+# from karateclub import DeepWalk, Node2Vec
+from models.hgnn import HGCNModel
 
 
 def gnnTraining(args, dataset):
@@ -26,9 +28,23 @@ def gnnTraining(args, dataset):
     """
 
     # Create dataloader
-    dataloader = torch_geometric.loader.DataLoader(
-        dataset, batch_size=args.batch_size, shuffle=True
-    )
+    indices = torch.randperm(len(dataset[0].x))
+    train_indices = indices[: int(0.8 * len(indices))]
+    val_indices = indices[int(0.8 * len(indices)) : int(0.9 * len(indices))]
+    test_indices = indices[int(0.9 * len(indices)) :]
+
+    dataset[0].train_mask[:] = False
+    dataset[0].train_mask[train_indices] = True
+    dataset[0].val_mask[:] = False
+    dataset[0].val_mask[val_indices] = True
+    dataset[0].test_mask[:] = False
+    dataset[0].test_mask[test_indices] = True
+
+    print(f"Train: {dataset[0].train_mask.sum()}/ {len(dataset[0].train_mask)}")
+    print(f"Val: {dataset[0].val_mask.sum()}/ {len(dataset[0].val_mask)}")
+    print(f"Test: {dataset[0].test_mask.sum()}/ {len(dataset[0].test_mask)}")
+
+    dataloader = torch_geometric.loader.DataLoader(dataset)
 
     input_dimension = dataset.num_features
     output_dimension = dataset.num_classes
@@ -44,19 +60,35 @@ def gnnTraining(args, dataset):
 
         # Initialising model and optimizer
         if args.gcn_flag:
-            print("Training GCN")
-            model = GCNModel(
-                input_dim=input_dimension,
-                hidden_dims=[
-                    args.gnn_hidden_dim,
-                    args.embedding_dim,
-                    args.mlp_hidden_dim,
-                ],
-                output_dim=output_dimension,
-                device=args.device,
-                dropout=args.dropout,
-                batch_norm=args.batch_norm,
-            ).to(args.device)
+            if args.hyperbolic_flag:
+                print("Training Hyperbolic GCN")
+                model = HGCNModel(
+                    input_dim=input_dimension,
+                    hidden_dims=[
+                        args.gnn_hidden_dim,
+                        args.embedding_dim,
+                        args.mlp_hidden_dim,
+                    ],
+                    output_dim=output_dimension,
+                    device=args.device,
+                    model=args.hyperbolic_model,
+                    dropout=args.dropout,
+                    batch_norm=args.batch_norm,
+                ).to(args.device)
+            else:
+                print("Training GCN")
+                model = GCNModel(
+                    input_dim=input_dimension,
+                    hidden_dims=[
+                        args.gnn_hidden_dim,
+                        args.embedding_dim,
+                        args.mlp_hidden_dim,
+                    ],
+                    output_dim=output_dimension,
+                    device=args.device,
+                    dropout=args.dropout,
+                    batch_norm=args.batch_norm,
+                ).to(args.device)
         elif args.graphsage_flag:
             print("Training GraphSage")
             model = GraphSageModel(
@@ -112,6 +144,7 @@ def gnnTraining(args, dataset):
             optimizer=optimizer,
             scheduler=scheduler,
             device=args.device,
+            batch_size=args.batch_size,
             patience=args.patience,
             epochs=args.num_epochs,
             verbose=args.verbose,
@@ -138,12 +171,12 @@ def gnnTraining(args, dataset):
             ]
         )
 
+        if args.model_save:
+            output_writer.model_save(model, f"{i}")
+
     # Writing to csv and json
     output_writer.write_csv()
     output_writer.write_json(vars(args))
-
-    if args.model_save:
-        output_writer.save_model(model)
 
 
 def randomWalk(args, dataset):
@@ -189,6 +222,8 @@ def randomWalk(args, dataset):
         optimizer = torch.optim.AdamW(
             model.parameters(), lr=args.lr, weight_decay=args.weight_decay
         )
+
+        # optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr)
         scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
             optimizer, T_max=args.num_epochs
         )
@@ -202,7 +237,7 @@ def randomWalk(args, dataset):
             val_accuracies,
         ) = mlpTrainLoop(
             model=model,
-            dataloader=(train_loader, val_loader),
+            dataloaders=(train_loader, val_loader),
             optimizer=optimizer,
             scheduler=scheduler,
             patience=args.patience,
@@ -244,6 +279,7 @@ if __name__ == "__main__":
     parser.add_argument("--gcn_flag", action="store_true")
     parser.add_argument("--graphsage_flag", action="store_true")
     parser.add_argument("--gat_flag", action="store_true")
+    parser.add_argument("--hyperbolic_flag", action="store_true")
     parser.add_argument("--random_walk_flag", action="store_true")
     parser.add_argument("--verbose", action="store_true")
 
@@ -284,6 +320,9 @@ if __name__ == "__main__":
 
     # GNN Model related arguments
     parser.add_argument("--gnn_hidden_dim", type=int, default=16)
+
+    # Hyperbolic GNN related arguments
+    parser.add_argument("--hyperbolic_model", type=str, choices=["lorentz", "poincare"])
 
     # Training related arguments
     parser.add_argument("--num_epochs", type=int, default=200)

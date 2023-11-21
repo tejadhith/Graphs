@@ -61,7 +61,7 @@ class GNNEssentials(nn.Module):
             Inverse degree vector
         """
 
-        degree_vector = 1 / torch_geometric.utils.degree(edge_index[0])
+        degree_vector = 1 / (torch_geometric.utils.degree(edge_index[0]) + 1e-6)
         indices = torch.arange(degree_vector.shape[0]).to(self.device)
         indices = torch.stack([indices, indices])
         n = degree_vector.shape[0]

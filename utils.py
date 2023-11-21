@@ -2,6 +2,7 @@ import os
 import csv
 import json
 import torch
+import torch_geometric
 
 
 class outputWriter(object):
@@ -48,9 +49,11 @@ class outputWriter(object):
         with open(os.path.join(self.output_dir, self.file_name + ".json"), "w") as f:
             json.dump(arguments, f, indent=4, sort_keys=True)
 
-    def model_save(self, model):
+    def model_save(self, model, run_num=""):
+        print("Saving model at: ", self.output_dir)
         torch.save(
-            model.state_dict(), os.path.join(self.output_dir, self.file_name + ".pt")
+            model.state_dict(),
+            os.path.join(self.output_dir, self.file_name + run_num + ".pt"),
         )
 
 
