@@ -8,6 +8,8 @@ from models.gnnfunctions import GNNEssentials
 class GCNLayer(nn.Module):
     """
     Implementation of a single GCN layer
+
+    by Mirza + Hitesh
     """
 
     def __init__(self, input_dim, output_dim, device):
@@ -63,6 +65,8 @@ class GCNLayer(nn.Module):
 class GraphSageLayer(nn.Module):
     """
     Implementation of a single GraphSage layer
+
+    by Mirza
     """
 
     def __init__(self, input_dim, output_dim, agg_layer, device):
@@ -127,6 +131,8 @@ class GraphSageLayer(nn.Module):
 class GraphAttentionNetwork(nn.Module):
     """
     Implementation of a single Graph Attention Network layer
+
+    by Mirza + Tejadhith
     """
 
     def __init__(

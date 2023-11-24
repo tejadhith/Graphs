@@ -7,6 +7,8 @@ import torch_geometric
 class GNNEssentials(nn.Module):
     """
     Implement functions for GNNs in general
+
+    by Mirza + Hitesh
     """
 
     def __init__(self, device):

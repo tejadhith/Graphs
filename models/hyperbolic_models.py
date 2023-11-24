@@ -6,6 +6,8 @@ import torch.nn.functional as F
 class PoincareModel(nn.Module):
     """
     Implement functions for Poincare Model
+
+    by Divyanshu + Mirza
     """
 
     def __init__(self, device):
@@ -251,6 +253,8 @@ class PoincareModel(nn.Module):
 class LorentzModel(nn.Module):
     """
     Implement functions for Lorentz Model
+
+    by Divyanshu + Tejadhith + Hitesh
     """
 
     def __init__(self, device):

@@ -8,6 +8,8 @@ import torch_geometric
 class outputWriter(object):
     """
     Write a list of list to a csv file.
+
+    by Divyanshu
     """
 
     def __init__(self, file_name, output_dir, column_heading=None):
@@ -80,6 +82,8 @@ def getLoaders(embeddings, dataset, batch_size, num_workers=1):
         Validation dataloader
     test_dataloader : torch.utils.data.DataLoader
         Test dataloader
+
+    by Divyanshu + Mirza + Hitesh
     """
 
     # Split into train, val datasetclear

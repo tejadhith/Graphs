@@ -11,7 +11,7 @@ from models.mlp import MLP
 from utils import outputWriter, getLoaders
 from train import *
 
-# from karateclub import DeepWalk, Node2Vec
+from karateclub import DeepWalk, Node2Vec
 from models.hgnn import HGCNModel
 
 
@@ -25,6 +25,8 @@ def gnnTraining(args, dataset):
         Arguments for training
     dataset : torch_geometric.datasets.Planetoid
         Dataset to train on
+
+    By Divyanshu + Hitesh
     """
 
     # Create dataloader
@@ -190,6 +192,8 @@ def randomWalk(args, dataset):
         Arguments for training
     dataset : torch_geometric.datasets.Planetoid
         Dataset to train on
+
+    By Tejadhith
     """
 
     output_dimension = dataset.num_classes

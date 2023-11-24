@@ -6,6 +6,8 @@ import torch.nn.functional as F
 class MLP(nn.Module):
     """
     Multi-layer perceptron with 1 hidden layer
+
+    by Tejadhith
     """
 
     def __init__(

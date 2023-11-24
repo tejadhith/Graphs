@@ -9,6 +9,8 @@ from models.gnnlayers import GCNLayer, GraphSageLayer, GraphAttentionNetwork
 class GCNModel(nn.Module):
     """
     GCN model with 2 layers and an MLP classifier
+
+    by Mirza + Hitesh
     """
 
     def __init__(
@@ -84,6 +86,8 @@ class GCNModel(nn.Module):
 class GraphSageModel(nn.Module):
     """
     GraphSage model with 2 layers and an MLP classifier
+
+    by Mirza
     """
 
     def __init__(
@@ -168,6 +172,8 @@ class GraphSageModel(nn.Module):
 class GATModel(nn.Module):
     """
     Graph Attention Network model with 2 layers and an MLP classifier
+
+    by Mirza + Tejadhith
     """
 
     def __init__(

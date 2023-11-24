@@ -9,6 +9,8 @@ from models.hyperbolic_models import LorentzModel, PoincareModel
 class HGCNLayer(nn.Module):
     """
     Implementation of a single HGCN layer with Lorentz Hyperbolic space
+
+    by Divyanshu
     """
 
     def __init__(

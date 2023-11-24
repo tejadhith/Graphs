@@ -9,6 +9,8 @@ from models.hyperbolic_models import LorentzModel, PoincareModel
 class HGCNModel(nn.Module):
     """
     Hyperbolic GCN model with 2 layers and an MLP classifier
+
+    by Divyanshu
     """
 
     def __init__(
@@ -128,6 +130,8 @@ class HGCNModel(nn.Module):
 class HyperbolicGraphSage(nn.Module):
     """
     Hyperbolic GraphSage model with 2 layers and an MLP classifier
+
+    by Divyanshu
     """
 
     def __init__(

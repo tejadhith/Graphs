@@ -4,7 +4,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch_geometric
 
-# from karateclub import DeepWalk, Node2Vec
+from karateclub import DeepWalk, Node2Vec
 
 
 def gnnTrainLoop(
@@ -54,6 +54,8 @@ def gnnTrainLoop(
         List of validation losses versus epochs
     val_accuracies : list
         List of validation accuracies versus epochs
+
+    by Divyanshu + Hitesh
     """
 
     model.train()
@@ -157,6 +159,8 @@ def gnnValidationLoop(model, dataloader, device, verbose=False):
         Validation loss
     val_accuracy : float
         Validation accuracy
+
+    by Divyanshu + Hitesh
     """
 
     model.eval()
@@ -207,6 +211,8 @@ def gnnTestLoop(model, dataloader, device, verbose=False):
         Validation loss
     test_accuracy : float
         Validation accuracy
+
+    by Divyanshu + Hitesh
     """
 
     model.eval()
@@ -273,6 +279,8 @@ def mlpTrainLoop(
         List of validation losses versus epochs
     val_accuracies : list
         List of validation accuracies versus epochs
+
+    by Tejadhith
     """
 
     model.train()
@@ -365,6 +373,8 @@ def mlpValidationLoop(model, dataloader, device, verbose=False):
         Validation loss
     val_accuracy : float
         Validation accuracy
+
+    by Tejadhith
     """
 
     model.eval()
@@ -410,6 +420,8 @@ def getRandomWalkEmbeddings(args, dataset):
     -------
     embeddings : torch.tensor
         Node embeddings
+
+    by Tejadhith
     """
 
     if args.random_walk_model == "Node2Vec":
