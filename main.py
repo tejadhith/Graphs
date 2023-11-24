@@ -276,41 +276,116 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
     # Run related arguments
-    parser.add_argument("--gcn_flag", action="store_true")
-    parser.add_argument("--graphsage_flag", action="store_true")
-    parser.add_argument("--gat_flag", action="store_true")
-    parser.add_argument("--hyperbolic_flag", action="store_true")
-    parser.add_argument("--random_walk_flag", action="store_true")
-    parser.add_argument("--verbose", action="store_true")
+    parser.add_argument(
+        "--gcn_flag",
+        action="store_true",
+        description="GCN flag for training",
+    )
+    parser.add_argument(
+        "--graphsage_flag",
+        action="store_true",
+        help="GraphSage flag for training",
+    )
+    parser.add_argument(
+        "--gat_flag",
+        action="store_true",
+        help="GAT flag for training",
+    )
+    parser.add_argument(
+        "--hyperbolic_flag",
+        action="store_true",
+        help="Hyperbolic flag for training",
+    )
+    parser.add_argument(
+        "--random_walk_flag",
+        action="store_true",
+        help="Random Walk flag for training",
+    )
+    parser.add_argument(
+        "--verbose",
+        action="store_true",
+        help="whether to print training progress",
+    )
 
     # Dataset related arguments
-    parser.add_argument("--dataset", type=str, default="Cora")
+    parser.add_argument(
+        "--dataset",
+        type=str,
+        default="Cora",
+        choices=["Cora", "Citeseer", "Pubmed"],
+        help="Dataset to train on",
+    )
 
     # Device related arguments
-    parser.add_argument("--device", type=str, default="cuda")
-    parser.add_argument("--num_workers", type=int, default=1)
+    parser.add_argument(
+        "--device",
+        type=str,
+        default="cuda",
+        help="Device to train on",
+    )
+    parser.add_argument(
+        "--num_workers",
+        type=int,
+        default=1,
+        help="Number of workers",
+    )
 
     # Common arguments
-    parser.add_argument("--embedding_dim", type=int, default=32)
-    parser.add_argument("--mlp_hidden_dim", type=int, default=16)
-    parser.add_argument("--dropout", type=float, default=0.2)
-    parser.add_argument("--batch_norm", action="store_true")
+    parser.add_argument(
+        "--embedding_dim",
+        type=int,
+        default=32,
+        help="Embedding dim before passing to MLP",
+    )
+    parser.add_argument(
+        "--mlp_hidden_dim",
+        type=int,
+        default=16,
+        help="Hidden dim of MLP",
+    )
 
     # GraphSage related arguments
     parser.add_argument(
-        "--aggregate_layer", type=str, choices=["mean", "sum", "mlp"], default="mean"
+        "--aggregate_layer",
+        type=str,
+        choices=["mean", "sum", "mlp"],
+        default="mean",
+        help="Aggregation layer in GraphSage",
     )
 
     # GAT related arguments
-    parser.add_argument("--attention_dim", type=int, default=16)
     parser.add_argument(
-        "--num_heads", type=int, default=4, help="Number of attention heads"
+        "--attention_dim",
+        type=int,
+        default=16,
+        help="Attention dim of GAT",
+    )
+    parser.add_argument(
+        "--num_heads",
+        type=int,
+        default=4,
+        help="Number of attention heads",
     )
 
     # Random Walk related arguments
-    parser.add_argument("--num_walks", type=int, default=10)
-    parser.add_argument("--walk_length", type=int, default=20)
-    parser.add_argument("--p", type=float, default=1.0)
+    parser.add_argument(
+        "--num_walks",
+        type=int,
+        default=10,
+        help="Number of walks per node",
+    )
+    parser.add_argument(
+        "--walk_length",
+        type=int,
+        default=20,
+        help="Length of each walk",
+    )
+    parser.add_argument(
+        "--p",
+        type=float,
+        default=1.0,
+        help="Return parameter for Node2Vec",
+    )
     parser.add_argument(
         "--random_walk_model",
         type=str,
@@ -319,23 +394,89 @@ if __name__ == "__main__":
     )
 
     # GNN Model related arguments
-    parser.add_argument("--gnn_hidden_dim", type=int, default=16)
+    parser.add_argument(
+        "--gnn_hidden_dim",
+        type=int,
+        default=16,
+        help="Hidden dim of GNN",
+    )
+    parser.add_argument(
+        "--dropout",
+        type=float,
+        default=0.2,
+        help="Dropout rate",
+    )
+    parser.add_argument(
+        "--batch_norm",
+        action="store_true",
+        help="Batch Norm flag",
+    )
 
     # Hyperbolic GNN related arguments
-    parser.add_argument("--hyperbolic_model", type=str, choices=["lorentz", "poincare"])
+    parser.add_argument(
+        "--hyperbolic_model",
+        type=str,
+        choices=["lorentz", "poincare"],
+        default="lorentz",
+        help="Hyperbolic model to use",
+    )
 
     # Training related arguments
-    parser.add_argument("--num_epochs", type=int, default=200)
-    parser.add_argument("--num_runs", type=int, default=10)
-    parser.add_argument("--lr", type=float, default=0.01)
-    parser.add_argument("--patience", type=int, default=10)
-    parser.add_argument("--weight_decay", type=float, default=5e-4)
-    parser.add_argument("--batch_size", type=int, default=32)
+    parser.add_argument(
+        "--num_runs",
+        type=int,
+        default=10,
+        help="Number of different initializations",
+    )
+    parser.add_argument(
+        "--num_epochs",
+        type=int,
+        default=200,
+        help="Max epochs for training",
+    )
+    parser.add_argument(
+        "--lr",
+        type=float,
+        default=0.01,
+        help="Learning rate",
+    )
+    parser.add_argument(
+        "--patience",
+        type=int,
+        default=10,
+        help="Patience for early stopping",
+    )
+    parser.add_argument(
+        "--weight_decay",
+        type=float,
+        default=5e-4,
+        help="Weight decay for optimizer",
+    )
+    parser.add_argument(
+        "--batch_size",
+        type=int,
+        default=32,
+        help="Batch size for training",
+    )
 
     # Output related arguments
-    parser.add_argument("--output_dir", type=str, default="output")
-    parser.add_argument("--file_name", type=str, required=True)
-    parser.add_argument("--model_save", action="store_true")
+    parser.add_argument(
+        "--output_dir",
+        type=str,
+        default="output",
+        help="Output directory",
+    )
+    parser.add_argument(
+        "--file_name",
+        type=str,
+        required=True,
+        help="File name for output",
+    )
+    parser.add_argument(
+        "--model_save",
+        action="store_true",
+        help="Save model flag",
+    )
 
     args = parser.parse_args()
 
